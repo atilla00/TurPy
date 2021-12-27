@@ -1,6 +1,6 @@
 from setuptools import setup
 
-with open('requirements_dev.txt') as file:
+with open('requirements.txt') as file:
     required = file.read().splitlines()
 
 if __name__ == "__main__":
