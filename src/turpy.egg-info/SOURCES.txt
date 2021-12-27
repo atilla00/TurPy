@@ -1,0 +1,11 @@
+LICENSE
+README.md
+pyproject.toml
+setup.cfg
+setup.py
+src/turpy.egg-info/PKG-INFO
+src/turpy.egg-info/SOURCES.txt
+src/turpy.egg-info/dependency_links.txt
+src/turpy.egg-info/not-zip-safe
+src/turpy.egg-info/requires.txt
+src/turpy.egg-info/top_level.txt

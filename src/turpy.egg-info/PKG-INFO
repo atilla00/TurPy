@@ -1,0 +1,24 @@
+Metadata-Version: 2.1
+Name: turpy
+Version: 0.0.0
+Summary: A python library for Turkish natural language processing.
+Home-page: UNKNOWN
+Author: Atilla Karaahmetoğlu
+License: MIT
+Platform: unix
+Platform: linux
+Platform: osx
+Platform: cygwin
+Platform: win32
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3 :: Only
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Programming Language :: Python :: 3.8
+Classifier: Programming Language :: Python :: 3.9
+Requires-Python: >=3.6
+Provides-Extra: testing
+License-File: LICENSE
+
+UNKNOWN
+
