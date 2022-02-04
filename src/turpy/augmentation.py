@@ -2,6 +2,8 @@ import string
 import random
 import numpy as np
 import json
+from typing import List
+import pkg_resources
 
 
 class KeyboardAugmentator:
@@ -15,8 +17,6 @@ class KeyboardAugmentator:
 
         # Chars to ignore when selecting random char.
         self.IGNORE_CHARS = string.punctuation + string.whitespace
-
-        import pkg_resources
 
         with open(pkg_resources.resource_filename('turpy', 'resources/tr.json')) as file:
             qwerty_maps = json.load(file)
@@ -33,7 +33,7 @@ class KeyboardAugmentator:
 
         self.qwerty_maps = qwerty_maps
 
-    def _swap_n_random_char(self, sentence, n=1):
+    def _swap_n_random_char(self, sentence, n=1) -> str:
 
         # Cast string to list for index based processing.
         sentence = list(sentence.lower())
@@ -41,7 +41,7 @@ class KeyboardAugmentator:
         if len(sentence) <= n:
             raise ValueError("Number of random swaps can not be equal or higher than length of the sentence.")
 
-        swapped_idx = []
+        swapped_idx: List[int] = []
 
         for i in range(n):
             # Select a random idx that is not in ignored list or already swapped idx.
@@ -69,4 +69,7 @@ class KeyboardAugmentator:
         Returns:
             sentence: Augmentated sentence.
         """
-        return self._swap_n_random_char(sentence, n=n_mistakes)
+
+        text = self._swap_n_random_char(sentence, n=n_mistakes)
+
+        return text
