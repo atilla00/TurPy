@@ -1,8 +1,13 @@
+"""
+TurPy Preprocessing library is mostly consist of modified Texthero functions.
+
+https://github.com/jbesomi/texthero/blob/master/texthero/preprocessing.py
+"""
+
 import re
 import string
 import unicodedata
 import pkg_resources
-import pandas as pd
 from typing import Set, Union
 from sklearn.base import BaseEstimator, TransformerMixin
 
@@ -63,12 +68,12 @@ class TextPreprocesser(BaseEstimator, TransformerMixin):
         return s.str.replace(r"http\S+", to_replace, regex=True)
 
     def _do_replace_stopwords(self, text, stopwords, to_replace):
-
-        pattern = r"""(?x)                          # Set flag to allow verbose regexps
-        \w+(?:-\w+)*                              # Words with optional internal hyphens 
-        | \s*                                     # Any space
-        | [][!"#$%&'*+,-./:;<=>?@\\^():_`{|}~]    # Any symbol 
-        """
+        pattern = r"""
+                    (?x)
+                    \w+(?:-\w+)*
+                    | \s*
+                    | [][!"#$%&'*+,-./:;<=>?@\\^():_`{|}~]
+                    """
         return "".join(t if t not in stopwords else to_replace for t in re.findall(pattern, text))
 
     def do_replace_stopwords(self, s, to_replace):
@@ -108,16 +113,12 @@ class TextPreprocesser(BaseEstimator, TransformerMixin):
             attribute = getattr(self, attribute_name)
             func = getattr(self, method_name)
 
-            if attribute == False:
+            if attribute is False:
                 continue
-            elif attribute == True:
+            elif attribute is True:
                 to_replace = ""
                 X = func(X, to_replace)
             else:
                 X = func(X, attribute)
 
         return X
-
-
-#a = TextPreprocesser()
-#a.fit_transform(pd.Series(["hello muıfka"]))
