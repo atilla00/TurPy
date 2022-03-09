@@ -1,5 +1,7 @@
 ![Logo](TurPyLogo.png)
 
-Aşağıdaki komutu çalıştırarak yazdığımız paketi indirebiliriz.
+Install locally with:
 
-pip install -e
+- pip install -e .
+- pip install -e .[testing]
+- pip install -e .[deep]
