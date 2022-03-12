@@ -9,10 +9,9 @@ import string
 import unicodedata
 import pkg_resources
 import pandas as pd
-from typing import Set, Union, Pattern, Optional
-from symspellpy import SymSpell, Verbosity
+from typing import Set, Union, Optional
+from symspellpy import SymSpell
 from sklearn.base import BaseEstimator, TransformerMixin
-from functools import lru_cache
 from tqdm import tqdm
 tqdm.pandas()
 
@@ -73,7 +72,8 @@ class SpellingPreprocessor(BaseEstimator, TransformerMixin):
 
         if self.speller == "sentence":
             suggestions = self.sym_spell.lookup_compound(text, max_edit_distance=self.max_edit_distance, ignore_non_words=self.ignore_non_words,
-                                                         transfer_casing=self.transfer_casing, split_by_space=self.split_by_space, ignore_term_with_digits=self.ignore_term_with_digits)
+                                                         transfer_casing=self.transfer_casing, split_by_space=self.split_by_space,
+                                                         ignore_term_with_digits=self.ignore_term_with_digits)
             corrected = suggestions[0].term
 
         elif self.speller == "noisy_sentence":
