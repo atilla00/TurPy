@@ -8,8 +8,29 @@ import re
 import string
 import unicodedata
 import pkg_resources
+import pandas as pd
 from typing import Set, Union
 from sklearn.base import BaseEstimator, TransformerMixin
+
+
+class SpellingPreprocessor(BaseEstimator, TransformerMixin):
+    def __init__(self):
+        pass
+
+    def check_types(self, s):
+
+        if not isinstance(s, pd.Series):
+            raise ValueError("Input should be pandas series.")
+
+        try:
+            first_non_nan_value = s.loc[s.first_valid_index()]
+            if not isinstance(first_non_nan_value, str):
+                raise ValueError("Pandas series should consist of only text.")
+        except KeyError:  # Only NaNs in Series -> same warning applies
+            raise ValueError("Pandas series should consist of only text.")
+
+    
+
 
 class TextPreprocesser(BaseEstimator, TransformerMixin):
     def __init__(self,
@@ -36,14 +57,15 @@ class TextPreprocesser(BaseEstimator, TransformerMixin):
 
     def check_types(self, s):
 
-        error_message = "Pandas series should consist of only text."
+        if not isinstance(s, pd.Series):
+            raise ValueError("Input should be pandas series.")
 
         try:
             first_non_nan_value = s.loc[s.first_valid_index()]
             if not isinstance(first_non_nan_value, str):
-                raise ValueError(error_message)
+                raise ValueError("Pandas series should consist of only text.")
         except KeyError:  # Only NaNs in Series -> same warning applies
-            raise ValueError(error_message)
+            raise ValueError("Pandas series should consist of only text.")
 
     def do_lowercase(self, s, to_replace):
         return s.str.lower()

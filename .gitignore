@@ -8,6 +8,7 @@ __pycache__/
 
 .cache/
 .tox/
+.envs/
 .mypy_cache/
 .pytest_cache/
 
