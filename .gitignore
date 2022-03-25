@@ -1,3 +1,14 @@
-.vscode/settings.json
+.vscode/
 notebooks/
 envs/
+
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints
+
+.cache/
+.tox/
+.mypy_cache/
+.pytest_cache/
+
+*.egg-info/
