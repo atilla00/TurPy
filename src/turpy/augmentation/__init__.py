@@ -1,1 +1,1 @@
-from .eda_augmentator import EDAAugmentator
+from ._eda_augmentator import EDAAugmentator
