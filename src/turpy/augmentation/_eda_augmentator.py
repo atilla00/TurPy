@@ -322,6 +322,7 @@ class EDAAugmentator(BaseEstimator, TransformerMixin):
         for text, label in tqdm(zip(X, y)):
             eda_list = eda(
                 text,
+                num_aug=self.num_augment,
                 alpha_sr=self.synonym_replacement_prob,
                 alpha_ri=self.synonym_insertion_prob,
                 alpha_rs=self.random_swapping_prob,

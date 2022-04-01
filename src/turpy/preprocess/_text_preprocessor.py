@@ -74,7 +74,7 @@ class TextPreprocesser(BaseEstimator, TransformerMixin):
         return s.str.replace(pattern, to_replace, regex=True)
 
     def do_replace_tags(self, s, to_replace):
-        pattern = r"@[a-zA-Z0-9]+"
+        pattern = r"@[a-zA-Z0-9_]+"
         return s.str.replace(pattern, to_replace, regex=True)
 
     def _do_replace_stopwords(self, text, stopwords, to_replace):
