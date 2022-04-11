@@ -3,9 +3,10 @@ import numpy as np
 import pandas as pd
 from sklearn.linear_model import RidgeClassifier
 from sklearn.base import ClassifierMixin, BaseEstimator
+from .._types import check_input
+from typing import Any
 
-
-def _gensim_preprocess(X):
+def _gensim_preprocess(X: pd.Series):
     """Lowers and splits texts"""
     X_pre = X.apply(gensim.utils.simple_preprocess).tolist()
     X_pre = [gensim.models.doc2vec.TaggedDocument(texts, [i]) for i, texts in enumerate(X_pre)]
@@ -14,7 +15,12 @@ def _gensim_preprocess(X):
 
 
 class Doc2VecClassifier(BaseEstimator, ClassifierMixin):
-    def __init__(self, vector_size, min_count, epochs, estimator=RidgeClassifier()):
+    def __init__(self,
+                 vector_size: int,
+                 min_count: int,
+                 epochs: int,
+                 estimator: Any = RidgeClassifier()
+                 ):
         self.estimator = estimator
         self.vector_size = vector_size
         self.min_count = min_count
@@ -23,7 +29,9 @@ class Doc2VecClassifier(BaseEstimator, ClassifierMixin):
         self.vectorizer = gensim.models.doc2vec.Doc2Vec(vector_size=self.vector_size, min_count=self.min_count, epochs=self.epochs)
         self.is_prefit = False
 
-    def prefit(self, X):
+    def prefit(self, X: pd.Series) -> None:
+        check_input(X)
+
         if self.is_prefit:
             print("Overwriting previous prefit.")
 
@@ -34,9 +42,8 @@ class Doc2VecClassifier(BaseEstimator, ClassifierMixin):
 
         self.is_prefit = True
 
-    def fit(self, X, y=None):
-        if y is None:
-            raise ValueError("Target(y) must be provided.")
+    def fit(self, X: pd.Series, y: pd.Series):
+        check_input(X)
 
         if self.is_prefit:
             X_pre = _gensim_preprocess(X)
@@ -54,14 +61,17 @@ class Doc2VecClassifier(BaseEstimator, ClassifierMixin):
 
         return self
 
-    def predict(self, X, y=None):
+    def predict(self, X: pd.Series):
+        check_input(X)
+
         X_pre = _gensim_preprocess(X)
         vectors = [self.vectorizer.infer_vector(doc.words) for doc in X_pre]
         X_vec = pd.DataFrame(np.stack(vectors))
 
         return self.estimator.predict(X_vec)
 
-    def predict_proba(self, X, y=None):
+    def predict_proba(self, X: pd.Series):
+        check_input(X)
 
         if not hasattr(self.estimator, "predict_proba"):
             raise AttributeError(f"{self.estimator} does not have a predict_proba method.")

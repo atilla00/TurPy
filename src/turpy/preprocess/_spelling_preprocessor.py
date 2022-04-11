@@ -3,7 +3,7 @@ from tqdm import tqdm
 from symspellpy import SymSpell
 from typing import Optional
 from sklearn.base import BaseEstimator, TransformerMixin
-from .._types import _check_types
+from .._types import check_input
 tqdm.pandas()
 
 class SpellingPreprocessor(BaseEstimator, TransformerMixin):
@@ -46,7 +46,7 @@ class SpellingPreprocessor(BaseEstimator, TransformerMixin):
             path = pkg_resources.resource_filename('turpy', 'resources/word_count.txt')
             self.sym_spell.load_dictionary(path, 0, 1, encoding="utf-8")
 
-    def correct_spelling(self, text):
+    def correct_spelling(self, text: str):
 
         if self.speller == "sentence":
             suggestions = self.sym_spell.lookup_compound(text, max_edit_distance=self.max_edit_distance, ignore_non_words=self.ignore_non_words,
@@ -68,9 +68,9 @@ class SpellingPreprocessor(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
         return self
 
-    def transform(self, X, y=None):
+    def transform(self, X):
 
-        _check_types(X)
+        check_input(X)
         X = X.progress_apply(self.correct_spelling)
 
         return X

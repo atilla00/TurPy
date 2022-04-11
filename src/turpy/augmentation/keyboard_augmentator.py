@@ -3,30 +3,33 @@ import functools
 import pandas as pd
 from sklearn.base import TransformerMixin
 import nlpaug.augmenter.char as nac
+from .._types import check_input
+from typing import Union, List, Callable
 
+TokenizerFunc = Union[Callable[[str], List[str]], None]
 
 def _duplicator(val, n):
     return [val for _ in range(n)]
 
 class KeyboardAugmentator(TransformerMixin, nac.KeyboardAug):
     def __init__(self,
-                 aug_char_min=1,
-                 aug_char_max=10,
-                 aug_char_p=0.3,
-                 aug_word_p=0.3,
-                 aug_word_min=1,
-                 aug_word_max=10,
-                 stopwords=None,
-                 tokenizer=None,
-                 reverse_tokenizer=None,
-                 include_special_char=False,
-                 include_numeric=False,
-                 include_upper_case=False,
-                 lang='tr',
-                 verbose=0,
-                 stopwords_regex=None,
-                 model_path=None,
-                 min_char=2
+                 aug_char_min: int = 1,
+                 aug_char_max: int = 10,
+                 aug_char_p: float = 0.3,
+                 aug_word_p: float = 0.3,
+                 aug_word_min: int = 1,
+                 aug_word_max: int = 10,
+                 min_char: int = 2,
+                 stopwords: Union[List[str], None] = None,
+                 tokenizer: TokenizerFunc = None,
+                 reverse_tokenizer: TokenizerFunc = None,
+                 include_special_char: bool = False,
+                 include_numeric: bool = False,
+                 include_upper_case: bool = False,
+                 lang: str = 'tr',
+                 verbose: int = 0,
+                 stopwords_regex: Union[str, None] = None,
+                 model_path: Union[str, None] = None,
                  ):
 
         if stopwords is None:
@@ -64,6 +67,8 @@ class KeyboardAugmentator(TransformerMixin, nac.KeyboardAug):
         return self
 
     def transform(self, X, y=None, n=5):
+        check_input(X)
+
         X_auged = X.apply(functools.partial(self.augment, n=n)) \
             .apply(pd.Series) \
             .stack() \

@@ -3,6 +3,7 @@ import string
 import unicodedata
 import pkg_resources
 from typing import Set, Union
+from .._types import check_input
 from sklearn.base import BaseEstimator, TransformerMixin
 
 
@@ -38,15 +39,19 @@ class TextPreprocesser(BaseEstimator, TransformerMixin):
         self.stopwords = stopwords
 
     def do_lowercase(self, s, to_replace):
+        check_input(s)
         return s.str.lower()
 
     def do_replace_digits(self, s, to_replace):
+        check_input(s)
         return s.str.replace(r"\d+", to_replace, regex=True)
 
     def do_replace_digits_blocks_only(self, s, to_replace):
+        check_input(s)
         return s.str.replace(r"\b\d+\b", to_replace, regex=True)
 
     def do_replace_punctuations(self, s, to_replace):
+        check_input(s)
         return s.str.replace(rf"([{string.punctuation}])+", to_replace, regex=True)
 
     def _do_remove_diacritics(self, text):
@@ -54,13 +59,15 @@ class TextPreprocesser(BaseEstimator, TransformerMixin):
         return "".join([char for char in nfkd_form if not unicodedata.combining(char)])
 
     def do_remove_diacritics(self, s, to_replace):
+        check_input(s)
         return s.astype("unicode").apply(self._do_remove_diacritics)
 
     def do_replace_urls(self, s, to_replace):
+        check_input(s)
         return s.str.replace(r"http\S+", to_replace, regex=True)
 
     def do_replace_html_tags(self, s, to_replace):
-
+        check_input(s)
         pattern = r"""(?x)                              # Turn on free-spacing
         <[^>]+>                                       # Remove <html> tags
         | &([a-z0-9]+|\#[0-9]{1,6}|\#x[0-9a-f]{1,6}); # Remove &nbsp;
@@ -69,10 +76,12 @@ class TextPreprocesser(BaseEstimator, TransformerMixin):
         return s.str.replace(pattern, to_replace, regex=True)
 
     def do_replace_hashtags(self, s, to_replace):
+        check_input(s)
         pattern = r"#[a-zA-Z0-9_]+"
         return s.str.replace(pattern, to_replace, regex=True)
 
     def do_replace_tags(self, s, to_replace):
+        check_input(s)
         pattern = r"@[a-zA-Z0-9_]+"
         return s.str.replace(pattern, to_replace, regex=True)
 
@@ -86,6 +95,7 @@ class TextPreprocesser(BaseEstimator, TransformerMixin):
         return "".join(t if t not in stopwords else to_replace for t in re.findall(pattern, text))
 
     def do_replace_stopwords(self, s, to_replace):
+        check_input(s)
         if self.stopwords is None:
             path = pkg_resources.resource_filename('turpy', 'resources/stopwords.txt')
 
@@ -95,6 +105,7 @@ class TextPreprocesser(BaseEstimator, TransformerMixin):
         return s.apply(self._do_replace_stopwords, args=(stopwords, to_replace))
 
     def do_replace_emojis(self, s, to_replace):
+        check_input(s)
         emoji_pattern = re.compile("["
                                    u"\U0001F600-\U0001F64F"  # emoticons
                                    u"\U0001F300-\U0001F5FF"  # symbols & pictographs
@@ -105,13 +116,14 @@ class TextPreprocesser(BaseEstimator, TransformerMixin):
         return s.str.replace(emoji_pattern, to_replace, regex=True)
 
     def do_remove_extra_whitespace(self, s, to_replace):
+        check_input(s)
         return s.str.replace("\xa0", " ").str.split().str.join(" ")
 
     def fit(self, X, y=None):
         return self
 
     def transform(self, X, y=None):
-
+        check_input(X)
         # Automatic
         # class_methods = [method_name for method_name in dir(self)
         #                 if method_name.startswith("do_") if callable(getattr(self, method_name))]
@@ -124,6 +136,7 @@ class TextPreprocesser(BaseEstimator, TransformerMixin):
         ]
 
         for method_name in class_methods:
+            # Ignore "do_" prefix.
             attribute_name = method_name[3:]
 
             attribute = getattr(self, attribute_name)

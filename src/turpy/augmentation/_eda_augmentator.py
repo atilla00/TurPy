@@ -15,6 +15,8 @@ import pkg_resources
 from typing import List
 from random import shuffle
 from tqdm import tqdm
+from .._types import check_input
+from typing import Union
 tqdm.pandas()
 random.seed(1)
 
@@ -296,11 +298,11 @@ def eda(sentence, alpha_sr=0.1, alpha_ri=0.1, alpha_rs=0.1, p_rd=0.1, num_aug=9)
 
 class EDAAugmentator(BaseEstimator, TransformerMixin):
     def __init__(self,
-                 max_augment=5,
-                 synonym_replacement_prob=0.1,
-                 synonym_insertion_prob=0.1,
-                 random_swapping_prob=0.1,
-                 random_deletion_prob=0.1):
+                 max_augment: int = 5,
+                 synonym_replacement_prob: float = 0.1,
+                 synonym_insertion_prob: float = 0.1,
+                 random_swapping_prob: float = 0.1,
+                 random_deletion_prob: float = 0.1):
 
         self.max_augment = max_augment
         self.synonym_replacement_prob = synonym_replacement_prob
@@ -308,10 +310,11 @@ class EDAAugmentator(BaseEstimator, TransformerMixin):
         self.random_swapping_prob = random_swapping_prob
         self.random_deletion_prob = random_deletion_prob
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.Series, y=None):
         return self
 
-    def transform(self, X, y=None):
+    def transform(self, X: pd.Series, y: Union[pd.Series, None] = None):
+        check_input(X)
 
         eda_partial = functools.partial(eda,
                                         num_aug=self.max_augment,

@@ -6,6 +6,10 @@ from sklearn.base import ClassifierMixin, BaseEstimator
 from simpletransformers.classification import ClassificationModel
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, TextClassificationPipeline
 
+from .._types import check_input
+import numpy.typing as npt
+from typing import cast
+
 
 class TransformerClassifier(BaseEstimator, ClassifierMixin):
     def __init__(self,
@@ -34,7 +38,14 @@ class TransformerClassifier(BaseEstimator, ClassifierMixin):
         self.model_path = model_path
         self.encoder = LabelEncoder()
 
-    def fit(self, X, y, verbose=True):
+    def fit(self, X: pd.Series, y: pd.Series, verbose: bool = True):
+
+        check_input(X)
+
+        target_type = type_of_target(y)
+        if target_type not in ["binary", "multiclass"]:
+            raise ValueError(f"Type of target is not classification. Type: {target_type}")
+        self.num_labels = y.nunique()
 
         # Simpletransformer dataset format
         train_df = pd.DataFrame()
@@ -42,11 +53,6 @@ class TransformerClassifier(BaseEstimator, ClassifierMixin):
 
         # Map target to between 0 to n-1 classes
         train_df["labels"] = self.encoder.fit_transform(train_df["labels"])
-
-        target_type = type_of_target(y)
-        if target_type not in ["binary", "multiclass"]:
-            raise ValueError(f"Type of target is not classification. Type: {target_type}")
-        self.num_labels = y.nunique()
 
         self.args = {
             "output_dir": self.output_dir,
@@ -69,18 +75,21 @@ class TransformerClassifier(BaseEstimator, ClassifierMixin):
 
         return self
 
-    def predict(self, X, batch_size=1, device=-1):
+    def predict(self, X: pd.Series, batch_size: int = 1, device: int = -1) -> npt.NDArray[np.float64]:
+        check_input(X)
+
         pipeline = TextClassificationPipeline(model=self.model, tokenizer=self.tokenizer, batch_size=batch_size, device=device)
-        preds = pipeline(X.tolist())
 
-        preds = [int(pred["label"].split("_")[-1]) for pred in preds]
-        preds = self.encoder.inverse_transform(preds)
+        preds = pipeline(X.tolist())  # List[Dict[]]
+        preds[:] = [int(pred["label"].split("_")[-1]) for pred in preds]  # List[int]
+        preds[:] = self.encoder.inverse_transform(preds)
 
-        return preds
+        return cast(npt.NDArray[np.float64], preds)  # For mypy cast sklearn LabelEncoder to np.ndarray
 
-    def predict_proba(self, X, batch_size=1, device=-1):
+    def predict_proba(self, X: pd.Series, batch_size: int = 1, device: int = -1) -> npt.NDArray[np.float64]:
+        check_input(X)
+
         pipeline = TextClassificationPipeline(model=self.model, tokenizer=self.tokenizer, return_all_scores=True, batch_size=batch_size, device=device)
-
         predictions = pipeline(X.tolist())
 
         probs = []
@@ -91,4 +100,4 @@ class TransformerClassifier(BaseEstimator, ClassifierMixin):
 
             probs.append(scores)
 
-        return np.array(probs)
+        return np.ndarray(scores)
