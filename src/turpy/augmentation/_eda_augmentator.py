@@ -2,7 +2,7 @@
 # Jason Wei and Kai Zou
 
 
-from .._types import _check_types
+import functools
 from sklearn.base import BaseEstimator, TransformerMixin
 from WordNet.WordNet import WordNet
 from MorphologicalAnalysis.FsmMorphologicalAnalyzer import FsmMorphologicalAnalyzer
@@ -15,17 +15,24 @@ import pkg_resources
 from typing import List
 from random import shuffle
 from tqdm import tqdm
+tqdm.pandas()
 random.seed(1)
+
+def _duplicator(val, n):
+    return [val for _ in range(int(n))]
+
+def _duplicator_pandas(row):
+    """duplicate {row[0]} as {row[1]} times"""
+    return _duplicator(row[0], row[1])
 
 
 wordnet = WordNet()
 fsm = FsmMorphologicalAnalyzer(fileName=pkg_resources.resource_filename('turpy', 'resources/turkish_finite_state_machine.xml'))
 
 # stop words list
-stop_words = ['acaba', 'ama', 'aslında', 'az', 'bazı', 'belki', 'biri', 'birkaç', 'birşey', 'biz', 'bu', 'çok',
-              'çünkü', 'da', 'daha', 'de', 'defa', 'diye', 'eğer', 'en', 'gibi', 'hem', 'hep', 'hepsi', 'her', 'hiç', 'için', 'ile',
-              'ise', 'kez', 'ki', 'kim', 'mı', 'mu', 'mü', 'nasıl', 'ne', 'neden', 'nerde', 'nerede', 'nereye', 'niçin', 'niye', 'o', 'sanki',
-              'şey', 'siz', 'şu', 'tüm', 've', 'veya', 'ya', 'yani']
+path = pkg_resources.resource_filename('turpy', 'resources/stopwords.txt')
+with open(path, 'r', encoding='utf-8') as file:
+    stopwords = list(file.read().split("\n"))
 
 
 def find_synonyms(word):
@@ -59,7 +66,6 @@ def add_original_word_suffixes(original, synonym):
     # First check if word roots are same (pronoun, verb, adjective, adverb) else return empty string
 
     # One way is this
-
     original_root = original_parsed.root
     synonym_root = fsm.morphologicalAnalysis(synonym).getFsmParse(0).root
 
@@ -80,8 +86,6 @@ def add_original_word_suffixes(original, synonym):
     for word_type in word_types:
         match_root = getattr(original_root, word_type)()
         match_synonym = getattr(synonym_root, word_type)()
-
-        # print(match_root, match_synonym)
 
         if match_root and match_synonym:
             did_true_matched = True
@@ -121,14 +125,9 @@ def get_only_chars(line):
 # Replace n words in the sentence with synonyms from wordnet
 ########################################################################
 
-
-# for the first time you use wordnet
-# import nltk
-# nltk.download('wordnet')
-
 def synonym_replacement(words, n):
     new_words = words.copy()
-    random_word_list = list(set([word for word in words if word not in stop_words]))
+    random_word_list = list(set([word for word in words if word not in stopwords]))
     random.shuffle(random_word_list)
     num_replaced = 0
     for random_word in random_word_list:
@@ -141,7 +140,6 @@ def synonym_replacement(words, n):
         if num_replaced >= n:  # only replace up to n words
             break
 
-    # this is stupid but we need it, trust me
     sentence = ' '.join(new_words)
     new_words = sentence.split(' ')
 
@@ -291,7 +289,6 @@ def eda(sentence, alpha_sr=0.1, alpha_ri=0.1, alpha_rs=0.1, p_rd=0.1, num_aug=9)
     augmented_sentences.append(sentence)
 
     augmented_senteces = list(set(augmented_sentences))
-
     augmented_senteces = [sentence.strip() for sentence in augmented_senteces]
 
     return augmented_senteces
@@ -299,13 +296,13 @@ def eda(sentence, alpha_sr=0.1, alpha_ri=0.1, alpha_rs=0.1, p_rd=0.1, num_aug=9)
 
 class EDAAugmentator(BaseEstimator, TransformerMixin):
     def __init__(self,
-                 num_augment=5,
+                 max_augment=5,
                  synonym_replacement_prob=0.1,
                  synonym_insertion_prob=0.1,
                  random_swapping_prob=0.1,
                  random_deletion_prob=0.1):
 
-        self.num_augment = num_augment
+        self.max_augment = max_augment
         self.synonym_replacement_prob = synonym_replacement_prob
         self.synonym_insertion_prob = synonym_insertion_prob
         self.random_swapping_prob = random_swapping_prob
@@ -314,23 +311,29 @@ class EDAAugmentator(BaseEstimator, TransformerMixin):
     def fit(self, X, y=None):
         return self
 
-    def transform(self, X, y):
-        _check_types(X)
+    def transform(self, X, y=None):
 
-        augmented_text, new_y = [], []
+        eda_partial = functools.partial(eda,
+                                        num_aug=self.max_augment,
+                                        alpha_sr=self.synonym_replacement_prob,
+                                        alpha_ri=self.synonym_insertion_prob,
+                                        alpha_rs=self.random_swapping_prob,
+                                        p_rd=self.random_deletion_prob
+                                        )
 
-        for text, label in tqdm(zip(X, y)):
-            eda_list = eda(
-                text,
-                num_aug=self.num_augment,
-                alpha_sr=self.synonym_replacement_prob,
-                alpha_ri=self.synonym_insertion_prob,
-                alpha_rs=self.random_swapping_prob,
-                p_rd=self.random_deletion_prob)
+        X_auged = X.progress_apply(eda_partial).apply(pd.Series).stack()
 
-            y_list = [label for _ in range(len(eda_list))]
+        if y is None:
+            return X_auged.reset_index(drop=True)
 
-            augmented_text += eda_list
-            new_y += y_list
+        # EDA doesnt always yield same number of augmentations in self.max_augment.
+        # Make sure y is duplicated correctly
+        counts = X_auged.groupby(level=[0]).size()
+        tmp = pd.concat([y, counts], axis=1)
+        tmp = tmp.apply(_duplicator_pandas, axis=1).tolist()
+        tmp = [item for sublist in tmp for item in sublist]
 
-        return pd.Series(augmented_text), pd.Series(new_y)
+        y_auged = pd.Series(tmp)
+        X_auged = X_auged.reset_index(drop=True)
+
+        return X_auged, y_auged

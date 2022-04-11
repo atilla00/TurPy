@@ -4,18 +4,17 @@ import unicodedata
 import pkg_resources
 from typing import Set, Union
 from sklearn.base import BaseEstimator, TransformerMixin
-from .._types import _check_types
 
 
 class TextPreprocesser(BaseEstimator, TransformerMixin):
     def __init__(self,
-                 lowercase: Union[bool] = False,
+                 lowercase: bool = False,
                  replace_digits: Union[bool, str] = False,
                  replace_digits_blocks_only: Union[bool, str] = False,
                  replace_punctuations: Union[bool, str] = False,
                  replace_emojis: Union[bool, str] = False,
-                 remove_diacritics: Union[bool] = False,
-                 remove_extra_whitespace: Union[bool] = False,
+                 remove_diacritics: bool = False,
+                 remove_extra_whitespace: bool = False,
                  replace_urls: Union[bool, str] = False,
                  replace_html_tags: Union[bool, str] = False,
                  replace_hashtags: Union[bool, str] = False,
@@ -112,9 +111,6 @@ class TextPreprocesser(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X, y=None):
-
-        # Check type of the data
-        _check_types(X)
 
         # Automatic
         # class_methods = [method_name for method_name in dir(self)
