@@ -44,7 +44,7 @@ class TransformerClassifier(BaseEstimator, ClassifierMixin):
         train_df["labels"] = self.encoder.fit_transform(train_df["labels"])
 
         target_type = type_of_target(y)
-        if not target_type in ["binary", "multiclass"]:
+        if target_type not in ["binary", "multiclass"]:
             raise ValueError(f"Type of target is not classification. Type: {target_type}")
         self.num_labels = y.nunique()
 
