@@ -1,8 +1,3 @@
-try:
-    import torch
-except ModuleNotFoundError:
-    raise ImportError("Please install Pytorch beforehand.")
-
 import numpy as np
 import pandas as pd
 from sklearn.utils.multiclass import type_of_target
