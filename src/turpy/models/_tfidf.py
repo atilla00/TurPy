@@ -54,7 +54,7 @@ class TfIdfClassifier(BaseEstimator, ClassifierMixin):
         Apply sublinear tf scaling, i.e. replace tf with 1 + log(tf).
 
     lowercase : bool, default=False
-        Convert all characters to lowercase before tokenizing. 
+        Convert all characters to lowercase before tokenizing.
     """
 
     def __init__(self,

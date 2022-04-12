@@ -16,7 +16,8 @@ class TransformerClassifier(BaseEstimator, ClassifierMixin):
     model_type : str, default="distilbert"
         The type of model (bert, xlnet, xlm, roberta, distilbert)
     model_name : str, default="dbmdz/distilbert-base-turkish-cased"
-        The exact architecture and trained weights to use. This may be a Hugging Face Transformers compatible pre-trained model, a community model, or the path to a directory containing model files.
+        The exact architecture and trained weights to use.
+        This may be a Hugging Face Transformers compatible pre-trained model, a community model, or the path to a directory containing model files.
     use_gpu : bool, default=True
         Use GPU if available. Setting to False will force model to use CPU only.
     gpu_id : int, default=0
@@ -32,7 +33,8 @@ class TransformerClassifier(BaseEstimator, ClassifierMixin):
     max_seq_length : int, default=128
         Maximum sequence length the model will support.
     output_dir : str, default="/outputs"
-        The directory where all outputs will be stored. This includes model checkpoints and evaluation results. Overwrites this dir if it runs again.
+        The directory where all outputs will be stored. This includes model checkpoints and evaluation results.
+        Overwrites this directory if run again.
     """
 
     def __init__(self,
