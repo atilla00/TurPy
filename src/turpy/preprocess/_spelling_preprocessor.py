@@ -3,7 +3,7 @@ from tqdm import tqdm
 from symspellpy import SymSpell
 from typing import Optional
 from sklearn.base import BaseEstimator, TransformerMixin
-from .._types import check_input
+from .._types import validate_text_input
 tqdm.pandas()
 
 class SpellingPreprocessor(BaseEstimator, TransformerMixin):
@@ -70,7 +70,7 @@ class SpellingPreprocessor(BaseEstimator, TransformerMixin):
 
     def transform(self, X):
 
-        check_input(X)
+        validate_text_input(X)
         X = X.progress_apply(self.correct_spelling)
 
         return X

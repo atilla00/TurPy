@@ -5,13 +5,36 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.base import ClassifierMixin, BaseEstimator
 from simpletransformers.classification import ClassificationModel
 from transformers import AutoTokenizer, AutoModelForSequenceClassification, TextClassificationPipeline
-
-from .._types import check_input
-import numpy.typing as npt
-from typing import cast
+from .._types import validate_text_input
 
 
 class TransformerClassifier(BaseEstimator, ClassifierMixin):
+    """Text Classifier using TF-IDF features given any Sklearn compatible estimator.
+
+    Parameters
+    ----------
+    model_type : str, default="distilbert"
+        The type of model (bert, xlnet, xlm, roberta, distilbert)
+    model_name : str, default="dbmdz/distilbert-base-turkish-cased"
+        The exact architecture and trained weights to use. This may be a Hugging Face Transformers compatible pre-trained model, a community model, or the path to a directory containing model files.
+    use_gpu : bool, default=True
+        Use GPU if available. Setting to False will force model to use CPU only.
+    gpu_id : int, default=0
+        Specific GPU that should be used.
+    n_gpu : int, default=1
+        Number of GPUs to use.
+    batch_size : int, default=8
+        Training batch_size.
+    no_epochs : int, default=1
+        The number of epochs the model will be trained for.
+    learning_rate : float, default=4e-5
+        The learning rate for training.
+    max_seq_length : int, default=128
+        Maximum sequence length the model will support.
+    output_dir : str, default="/outputs"
+        The directory where all outputs will be stored. This includes model checkpoints and evaluation results. Overwrites this dir if it runs again.
+    """
+
     def __init__(self,
                  model_type: str = "distilbert",
                  model_path: str = "dbmdz/distilbert-base-turkish-cased",
@@ -39,8 +62,26 @@ class TransformerClassifier(BaseEstimator, ClassifierMixin):
         self.encoder = LabelEncoder()
 
     def fit(self, X: pd.Series, y: pd.Series, verbose: bool = True):
+        f"""Fit/Finetune a {self.model_type} estimator from traning set.
 
-        check_input(X)
+        Parameters
+        ----------
+        X : pd.Series
+            Pandas text series containing texts.
+
+        y : pd.Series
+            Pandas text series containing targets.
+
+        verbose : bool, default=True
+            Training verbosity
+
+        Returns
+        -------
+        self : object
+            Fitted estimator.
+        """
+
+        validate_text_input(X)
 
         target_type = type_of_target(y)
         if target_type not in ["binary", "multiclass"]:
@@ -75,8 +116,26 @@ class TransformerClassifier(BaseEstimator, ClassifierMixin):
 
         return self
 
-    def predict(self, X: pd.Series, batch_size: int = 1, device: int = -1) -> npt.NDArray[np.float64]:
-        check_input(X)
+    def predict(self, X: pd.Series, batch_size: int = 1, device: int = -1):
+        """Predict class labels for samples in `X`.
+
+        Parameters
+        ----------
+        X : pd.Series
+            Pandas text series containing texts.
+
+        batch_size : int, default=1
+            Size of batch.
+
+        device : int, default=-1
+            Device number for prediction.
+
+        Returns
+        -------
+        y_pred : ndarray of shape (n_samples,) or (n_samples, n_outputs)
+            Vector or matrix containing the predictions.
+        """
+        validate_text_input(X)
 
         pipeline = TextClassificationPipeline(model=self.model, tokenizer=self.tokenizer, batch_size=batch_size, device=device)
 
@@ -84,10 +143,29 @@ class TransformerClassifier(BaseEstimator, ClassifierMixin):
         preds[:] = [int(pred["label"].split("_")[-1]) for pred in preds]  # List[int]
         preds[:] = self.encoder.inverse_transform(preds)
 
-        return cast(npt.NDArray[np.float64], preds)  # For mypy cast sklearn LabelEncoder to np.ndarray
+        return preds
 
-    def predict_proba(self, X: pd.Series, batch_size: int = 1, device: int = -1) -> npt.NDArray[np.float64]:
-        check_input(X)
+    def predict_proba(self, X: pd.Series, batch_size: int = 1, device: int = -1):
+        """Probability estimates.
+
+        Parameters
+        ----------
+        X : pd.Series
+            Pandas text series containing texts.
+
+        batch_size : int, default=1
+            Size of batch.
+
+        device : int, default=-1
+            Device number for prediction.
+
+        Returns
+        -------
+        y_prob : ndarray of shape (n_samples, n_classes)
+            The predicted probability of the sample for each class in the
+            model, where classes are ordered as they are in `self.classes_`.
+        """
+        validate_text_input(X)
 
         pipeline = TextClassificationPipeline(model=self.model, tokenizer=self.tokenizer, return_all_scores=True, batch_size=batch_size, device=device)
         predictions = pipeline(X.tolist())

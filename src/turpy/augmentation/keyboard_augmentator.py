@@ -3,7 +3,7 @@ import functools
 import pandas as pd
 from sklearn.base import TransformerMixin
 import nlpaug.augmenter.char as nac
-from .._types import check_input
+from .._types import validate_text_input
 from typing import Union, List, Callable
 
 TokenizerFunc = Union[Callable[[str], List[str]], None]
@@ -67,7 +67,7 @@ class KeyboardAugmentator(TransformerMixin, nac.KeyboardAug):
         return self
 
     def transform(self, X, y=None, n=5):
-        check_input(X)
+        validate_text_input(X)
 
         X_auged = X.apply(functools.partial(self.augment, n=n)) \
             .apply(pd.Series) \

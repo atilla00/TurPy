@@ -15,7 +15,7 @@ import pkg_resources
 from typing import List
 from random import shuffle
 from tqdm import tqdm
-from .._types import check_input
+from .._types import validate_text_input
 from typing import Union
 tqdm.pandas()
 random.seed(1)
@@ -314,7 +314,7 @@ class EDAAugmentator(BaseEstimator, TransformerMixin):
         return self
 
     def transform(self, X: pd.Series, y: Union[pd.Series, None] = None):
-        check_input(X)
+        validate_text_input(X)
 
         eda_partial = functools.partial(eda,
                                         num_aug=self.max_augment,

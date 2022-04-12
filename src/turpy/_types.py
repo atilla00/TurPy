@@ -2,9 +2,11 @@ from typing import Tuple
 import pandas as pd
 import functools
 
-def check_input(s: pd.Series) -> None:
-    """
 
+def validate_text_input(s: pd.Series) -> None:
+    """
+    Validate input to be Pandas Series with Text.
+    Raises ValueError if fails
     """
     if not isinstance(s, pd.Series):
         raise ValueError("The input should be pandas series.")
@@ -17,7 +19,8 @@ def check_input(s: pd.Series) -> None:
         raise ValueError("The input pandas series should only consist of strings.")
 
 
-def _check_types(s: pd.Series) -> Tuple[bool, str]:
+# Deprecated Input Decorator
+def __check_types(s: pd.Series) -> Tuple[bool, str]:
     """
     Check type of input.
     """
@@ -41,7 +44,7 @@ def TextSeries(func):
         s = args[0]  # The first input argument will be checked.
         # Check if input series can fulfill type.
 
-        fulfills, error_string = _check_types(s)
+        fulfills, error_string = __check_types(s)
         if not fulfills:
             raise TypeError(error_string)
 
