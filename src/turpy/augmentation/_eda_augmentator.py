@@ -297,6 +297,26 @@ def eda(sentence, alpha_sr=0.1, alpha_ri=0.1, alpha_rs=0.1, p_rd=0.1, num_aug=9)
 
 
 class EDAAugmentator(BaseEstimator, TransformerMixin):
+    """Text Classifier using TF-IDF features given any Sklearn compatible estimator.
+
+    Parameters
+    ----------
+    max_augment : int, default=5
+        Maximum number of augmentations to apply. Number of augmentation depends on the text input like how words with multiple synonym.
+
+    synonym_replacement_prob : float, default=0.1
+        Probability of synonym replacement of a random word. *Slow
+
+    synonym_insertion_prob : float, default=0.1
+        Probability of synonym insertion of a random word. *Slow
+
+    random_swapping_prob : float, default=0.1
+        Probability of randomly swapping placement of the two words.
+
+    random_deletion_prob : float, default=0.1
+        Probability of randomly deleting a word.
+    """
+
     def __init__(self,
                  max_augment: int = 5,
                  synonym_replacement_prob: float = 0.1,
@@ -311,9 +331,28 @@ class EDAAugmentator(BaseEstimator, TransformerMixin):
         self.random_deletion_prob = random_deletion_prob
 
     def fit(self, X: pd.Series, y=None):
+        """Does nothing. Exist for compatibility reasons for sklearn pipelines."""
         return self
 
     def transform(self, X: pd.Series, y: Union[pd.Series, None] = None):
+        """Augmentate text from given text series.
+
+        Parameters
+        ----------
+        X : pd.Series
+            Pandas text series containing texts.
+
+        y : Union[pd.Series, None]
+            None or Pandas text series containing targets. If provided augmented target series returned.
+
+        Returns
+        -------
+        X_auged : pd.Series
+            Augmented text series.
+
+        y_auged : pd.Series or None
+            Augmented target series.
+        """
         validate_text_input(X)
 
         eda_partial = functools.partial(eda,

@@ -1,2 +1,2 @@
 from ._eda_augmentator import EDAAugmentator
-from .keyboard_augmentator import KeyboardAugmentator
+from ._keyboard_augmentator import KeyboardAugmentator

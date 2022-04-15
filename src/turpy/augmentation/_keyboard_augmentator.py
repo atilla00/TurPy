@@ -4,18 +4,73 @@ import pandas as pd
 from sklearn.base import TransformerMixin
 import nlpaug.augmenter.char as nac
 from .._types import validate_text_input
-from typing import Union, List, Callable
-
-TokenizerFunc = Union[Callable[[str], List[str]], None]
+from ..base import TokenizerFunc
+from typing import Union, List
 
 def _duplicator(val, n):
     return [val for _ in range(n)]
 
 class KeyboardAugmentator(TransformerMixin, nac.KeyboardAug):
+    """Text augmentation by simulating keyboard error.
+
+    Parameters
+    ----------
+    aug_char_p : float, default=0.3
+        Percentage of character (per token) will be augmented.
+
+    aug_char_min : int, default=1
+        Minimum number of character will be augmented.
+
+    aug_char_max : int, default=10
+        Maximum number of character will be augmented.
+
+    aug_word_p : float, default=0.3
+        Percentage of word will be augmented.
+
+    aug_word_min : int, default=1
+        Minimum number of word will be augmented.
+
+    aug_word_max : int, default=10
+        Maximum number of word will be augmented.
+
+    min_char : int, default=2
+        If word less than this value, do not draw word for augmentation.
+
+    stopwords : Union[List[str], None], default=None
+        ist of words which will be skipped from augment operation.
+
+    tokenizer : TokenizerFunc, default=None
+        Customize tokenization process.
+
+    reverse_tokenizer : TokenizerFunc, default=None
+        Customize reverse of tokenization process.
+
+    include_special_char : bool, default=False
+        Include special character.
+
+    include_numeric : bool, default=False
+         If True, numeric character may be included in augmented data.
+
+    include_upper_case : bool, default=False
+        If True, upper case character may be included in augmented data.
+
+    lang : str, default='str'
+        Indicate built-in language model.
+
+    verbose : int, default=0
+        Verbosity level.
+
+    stopwords_regex : Union[str, None], default=None
+        Regular expression for matching words which will be skipped from augment operation.
+
+    model_path : Union[str, None], default=None
+        Loading customize model from file system.
+    """
+
     def __init__(self,
+                 aug_char_p: float = 0.3,
                  aug_char_min: int = 1,
                  aug_char_max: int = 10,
-                 aug_char_p: float = 0.3,
                  aug_word_p: float = 0.3,
                  aug_word_min: int = 1,
                  aug_word_max: int = 10,
@@ -64,9 +119,28 @@ class KeyboardAugmentator(TransformerMixin, nac.KeyboardAug):
         return f"""{self.name}(\n{cls_str}\n)"""
 
     def fit(self, X, y=None):
+        """Does nothing. Exist for compatibility reasons for sklearn pipelines."""
         return self
 
     def transform(self, X, y=None, n=5):
+        """Augmentate text from given text series.
+
+        Parameters
+        ----------
+        X : pd.Series
+            Pandas text series containing texts.
+
+        y : Union[pd.Series, None]
+            None or Pandas text series containing targets. If provided augmented target series returned.
+
+        Returns
+        -------
+        X_auged : pd.Series
+            Augmented text series.
+
+        y_auged : pd.Series or None
+            Augmented target series.
+        """
         validate_text_input(X)
 
         X_auged = X.apply(functools.partial(self.augment, n=n)) \
