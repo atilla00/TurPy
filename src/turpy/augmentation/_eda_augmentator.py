@@ -16,7 +16,7 @@ from typing import List
 from random import shuffle
 from tqdm import tqdm
 from .._types import validate_text_input
-from typing import Union
+from typing import Optional
 tqdm.pandas()
 random.seed(1)
 
@@ -297,7 +297,10 @@ def eda(sentence, alpha_sr=0.1, alpha_ri=0.1, alpha_rs=0.1, p_rd=0.1, num_aug=9)
 
 
 class EDAAugmentator(BaseEstimator, TransformerMixin):
-    """Text Classifier using TF-IDF features given any Sklearn compatible estimator.
+    """Easy Data Augmentation (EDA) for text classification tasks.
+
+    https://arxiv.org/pdf/1901.11196.pdf
+    https://github.com/jasonwei20/eda_nlp
 
     Parameters
     ----------
@@ -334,7 +337,7 @@ class EDAAugmentator(BaseEstimator, TransformerMixin):
         """Does nothing. Exist for compatibility reasons for sklearn pipelines."""
         return self
 
-    def transform(self, X: pd.Series, y: Union[pd.Series, None] = None):
+    def transform(self, X: pd.Series, y: Optional[pd.Series] = None):
         """Augmentate text from given text series.
 
         Parameters
@@ -342,7 +345,7 @@ class EDAAugmentator(BaseEstimator, TransformerMixin):
         X : pd.Series
             Pandas text series containing texts.
 
-        y : Union[pd.Series, None]
+        y : Optional[pd.Series]
             None or Pandas text series containing targets. If provided augmented target series returned.
 
         Returns

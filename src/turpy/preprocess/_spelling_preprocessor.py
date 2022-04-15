@@ -1,4 +1,5 @@
 import pkg_resources
+import pandas as pd
 from tqdm import tqdm
 from symspellpy import SymSpell
 from typing import Optional
@@ -7,6 +8,38 @@ from .._types import validate_text_input
 tqdm.pandas()
 
 class SpellingPreprocessor(BaseEstimator, TransformerMixin):
+    """Spelling preprocessor using SymSpell.
+
+    Parameters
+    ----------
+    speller : str, default='sentence'
+        Which algorithms to use for correction. Possible algorithms: ['sentence', 'noisy sentence'].
+
+    max_edit_distance : int, default=1
+        The maximum edit distance between input andsuggested words.
+
+    word_counts_file : Optional[str], default=None
+        Load word count file from filesystem. Default uses from Turkish TurPy word counts file.
+
+    ignore_non_words : bool, default=False
+        A flag to determine whether numbers and acronyms are left alone during the spell checking process.
+
+    transfer_casing : bool, default=False
+        A flag to determine whether the casing --- i.e., uppercase vs lowercase --- should be carried over from `phrase`.
+
+    split_by_space : bool, default=False
+        Splits the phrase into words simply based on space.
+
+    ignore_term_with_digits : bool, default=False
+        A flag to determine whether any term with digits is left alone during the spell checking process. Only works when ``ignore_non_words` is also ``True``.
+
+    max_segmentation_word_length : Optional[int], default=None
+        The maximum word length that should be considered.
+
+    ignore_token : Optional[str], default=None
+        A regex pattern describing what words/phrases to ignore and leave unchanged.
+    """
+
     def __init__(self,
                  speller: str = "sentence",
                  max_edit_distance: int = 1,
@@ -46,8 +79,8 @@ class SpellingPreprocessor(BaseEstimator, TransformerMixin):
             path = pkg_resources.resource_filename('turpy', 'resources/word_count.txt')
             self.sym_spell.load_dictionary(path, 0, 1, encoding="utf-8")
 
-    def correct_spelling(self, text: str):
-
+    def _correct_spelling(self, text: str):
+        """Correct a string"""
         if self.speller == "sentence":
             suggestions = self.sym_spell.lookup_compound(text, max_edit_distance=self.max_edit_distance, ignore_non_words=self.ignore_non_words,
                                                          transfer_casing=self.transfer_casing, split_by_space=self.split_by_space,
@@ -65,12 +98,27 @@ class SpellingPreprocessor(BaseEstimator, TransformerMixin):
 
         return corrected
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.Series, y=None):
+        """Does nothing. Exist for compatibility reasons for sklearn pipelines."""
         return self
 
-    def transform(self, X):
+    def transform(self, X: pd.Series, y=None):
+        """Preprocess text from given text series.
 
+        Parameters
+        ----------
+        X : pd.Series
+            Pandas text series containing texts.
+
+        y : Optional[pd.Series]
+            Ignored.
+
+        Returns
+        -------
+        X : pd.Series
+            Preprocessed text series.
+        """
         validate_text_input(X)
-        X = X.progress_apply(self.correct_spelling)
+        X = X.progress_apply(self._correct_spelling)
 
         return X

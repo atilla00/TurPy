@@ -2,12 +2,53 @@ import re
 import string
 import unicodedata
 import pkg_resources
-from typing import Set, Union
+from typing import Set, Union, Optional
 from .._types import validate_text_input
 from sklearn.base import BaseEstimator, TransformerMixin
 
 
 class TextPreprocesser(BaseEstimator, TransformerMixin):
+    """Text cleaning preprocessor.
+
+    Parameters
+    ----------
+    lowercase : bool, default=False
+        Lowercase text
+
+    replace_digits : Union[bool, str], default=False
+        Replace digits with provided string. Setting this to True will remove digits.
+
+    replace_digits_blocks_only : Union[bool, str], default=False
+        Replace block of digits with provided string. Setting this to True will remove block of digits.
+
+    replace_punctuations : Union[bool, str], default=False
+        Replace punctuations with provided string. Setting this to True will remove punctuations.
+
+    replace_emojis : Union[bool, str], default=False
+        Replace emojis with provided string. Setting this to True will remove emojis.
+
+    remove_diacritics : Union[bool, str], default=False
+        Remove diacritics.
+
+    remove_extra_white_space : Union[bool, str], default=False
+        Remove extra white space.
+
+    replace_urls : Union[bool, str], default=False
+        Replace urls with provided string. Setting this to True will remove urls.
+
+    replace_html_tags : Union[bool, str], default=False
+        Replace html tags with provided string. Setting this to True will remove html tags.
+
+    replace_tags : Union[bool, str], default=False
+        Replace tags with provided string. Setting this to True will remove tags.
+
+    replace_stopwords : Union[bool, str], default=False
+        Replace stopwrods with provided string. Setting this to True will remove stopwords.
+
+    stopwords : Otpional[Set[str]], default=None
+        Set of stopwords.
+    """
+
     def __init__(self,
                  lowercase: bool = False,
                  replace_digits: Union[bool, str] = False,
@@ -21,7 +62,7 @@ class TextPreprocesser(BaseEstimator, TransformerMixin):
                  replace_hashtags: Union[bool, str] = False,
                  replace_tags: Union[bool, str] = False,
                  replace_stopwords: Union[bool, str] = False,
-                 stopwords: Union[Set[str], None] = None
+                 stopwords: Optional[Set[str]] = None
                  ):
 
         self.lowercase = lowercase
@@ -69,8 +110,8 @@ class TextPreprocesser(BaseEstimator, TransformerMixin):
     def do_replace_html_tags(self, s, to_replace):
         validate_text_input(s)
         pattern = r"""(?x)                              # Turn on free-spacing
-        <[^>]+>                                       # Remove <html> tags
-        | &([a-z0-9]+|\#[0-9]{1,6}|\#x[0-9a-f]{1,6}); # Remove &nbsp;
+        <[ ^ >]+>                                       # Remove <html> tags
+        | & ([a-z0-9]+|\  # [0-9]{1,6}|\#x[0-9a-f]{1,6}); # Remove &nbsp;
         """
 
         return s.str.replace(pattern, to_replace, regex=True)
@@ -88,9 +129,9 @@ class TextPreprocesser(BaseEstimator, TransformerMixin):
     def _do_replace_stopwords(self, text, stopwords, to_replace):
         pattern = r"""
                     (?x)
-                    \w+(?:-\w+)*
-                    | \s*
-                    | [][!"#$%&'*+,-./:;<=>?@\\^():_`{|}~]
+                    \w+(?: -\w+) *
+                    | \s *
+                    | [][!"  # $%&'*+,-./:;<=>?@\\^():_`{|}~]
                     """
         return "".join(t if t not in stopwords else to_replace for t in re.findall(pattern, text))
 
@@ -120,9 +161,25 @@ class TextPreprocesser(BaseEstimator, TransformerMixin):
         return s.str.replace("\xa0", " ").str.split().str.join(" ")
 
     def fit(self, X, y=None):
+        """Does nothing. Exist for compatibility reasons for sklearn pipelines."""
         return self
 
     def transform(self, X, y=None):
+        """Preprocess text from given text series.
+
+        Parameters
+        - ---------
+        X: pd.Series
+            Pandas text series containing texts.
+
+        y: Optional[pd.Series]
+            Ignored.
+
+        Returns
+        - ------
+        X: pd.Series
+            Preprocessed text series.
+        """
         validate_text_input(X)
         # Automatic
         # class_methods = [method_name for method_name in dir(self)

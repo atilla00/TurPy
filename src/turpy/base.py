@@ -1,4 +1,4 @@
-from typing import Any, Union, List, Callable
+from typing import Any, Optional, List, Callable
 
 AnySklearnEstimator = Any
-TokenizerFunc = Union[Callable[[str], List[str]], None]
+TokenizerFunc = Optional[Callable[[str], List[str]]]

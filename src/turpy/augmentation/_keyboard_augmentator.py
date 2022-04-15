@@ -5,13 +5,13 @@ from sklearn.base import TransformerMixin
 import nlpaug.augmenter.char as nac
 from .._types import validate_text_input
 from ..base import TokenizerFunc
-from typing import Union, List
+from typing import List, Optional
 
 def _duplicator(val, n):
     return [val for _ in range(n)]
 
 class KeyboardAugmentator(TransformerMixin, nac.KeyboardAug):
-    """Text augmentation by simulating keyboard error.
+    """Text augmentation by simulating keyboard errors.
 
     Parameters
     ----------
@@ -36,7 +36,7 @@ class KeyboardAugmentator(TransformerMixin, nac.KeyboardAug):
     min_char : int, default=2
         If word less than this value, do not draw word for augmentation.
 
-    stopwords : Union[List[str], None], default=None
+    stopwords : Optional[List[str]], default=None
         ist of words which will be skipped from augment operation.
 
     tokenizer : TokenizerFunc, default=None
@@ -60,10 +60,10 @@ class KeyboardAugmentator(TransformerMixin, nac.KeyboardAug):
     verbose : int, default=0
         Verbosity level.
 
-    stopwords_regex : Union[str, None], default=None
+    stopwords_regex : Optional[str], default=None
         Regular expression for matching words which will be skipped from augment operation.
 
-    model_path : Union[str, None], default=None
+    model_path : Optional[str], default=None
         Loading customize model from file system.
     """
 
@@ -75,7 +75,7 @@ class KeyboardAugmentator(TransformerMixin, nac.KeyboardAug):
                  aug_word_min: int = 1,
                  aug_word_max: int = 10,
                  min_char: int = 2,
-                 stopwords: Union[List[str], None] = None,
+                 stopwords: Optional[List[str]] = None,
                  tokenizer: TokenizerFunc = None,
                  reverse_tokenizer: TokenizerFunc = None,
                  include_special_char: bool = False,
@@ -83,8 +83,8 @@ class KeyboardAugmentator(TransformerMixin, nac.KeyboardAug):
                  include_upper_case: bool = False,
                  lang: str = 'tr',
                  verbose: int = 0,
-                 stopwords_regex: Union[str, None] = None,
-                 model_path: Union[str, None] = None,
+                 stopwords_regex: Optional[str] = None,
+                 model_path: Optional[str] = None,
                  ):
 
         if stopwords is None:
@@ -118,11 +118,11 @@ class KeyboardAugmentator(TransformerMixin, nac.KeyboardAug):
         cls_str = ",\n".join(cls_str_list)
         return f"""{self.name}(\n{cls_str}\n)"""
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.Series, y=None):
         """Does nothing. Exist for compatibility reasons for sklearn pipelines."""
         return self
 
-    def transform(self, X, y=None, n=5):
+    def transform(self, X: pd.Series, y=None, n=5):
         """Augmentate text from given text series.
 
         Parameters
@@ -130,7 +130,7 @@ class KeyboardAugmentator(TransformerMixin, nac.KeyboardAug):
         X : pd.Series
             Pandas text series containing texts.
 
-        y : Union[pd.Series, None]
+        y : Optional[pd.Series]
             None or Pandas text series containing targets. If provided augmented target series returned.
 
         Returns
