@@ -191,7 +191,7 @@ class TextPreprocesser(BaseEstimator, TransformerMixin):
         # Ordered
         class_methods = [
             "_do_lowercase", "_do_remove_diacritics", "_do_replace_punctuations", "_do_replace_emojis",
-            "_do_replace_digits", "_do_replace_digits_blocks_only", "_do_replace_urls", "_do_replace_html_tags", "_do_replace_hashtags", "do_replace_tags",
+            "_do_replace_digits", "_do_replace_digits_blocks_only", "_do_replace_urls", "_do_replace_html_tags", "_do_replace_hashtags", "_do_replace_tags",
             "_do_replace_stopwords", "_do_remove_extra_whitespace"
         ]
 
