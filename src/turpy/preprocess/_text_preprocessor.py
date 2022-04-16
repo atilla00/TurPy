@@ -197,7 +197,7 @@ class TextPreprocesser(BaseEstimator, TransformerMixin):
 
         for method_name in class_methods:
             # Ignore "do_" prefix.
-            attribute_name = method_name[3:]
+            attribute_name = method_name[4:]
 
             attribute = getattr(self, attribute_name)
             func = getattr(self, method_name)
