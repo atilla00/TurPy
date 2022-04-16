@@ -16,7 +16,6 @@ from typing import List
 from random import shuffle
 from tqdm import tqdm
 from .._types import validate_text_input
-from typing import Optional
 tqdm.pandas()
 random.seed(1)
 
@@ -297,21 +296,21 @@ def eda(sentence, alpha_sr=0.1, alpha_ri=0.1, alpha_rs=0.1, p_rd=0.1, num_aug=9)
 
 
 class EDAAugmentator(BaseEstimator, TransformerMixin):
-    """Easy Data Augmentation (EDA) for text classification tasks.
+    r"""Easy Data Augmentation (EDA) for text classification tasks.
 
     https://arxiv.org/pdf/1901.11196.pdf
     https://github.com/jasonwei20/eda_nlp
 
     Parameters
-    ----------
+    ------------
     max_augment : int, default=5
         Maximum number of augmentations to apply. Number of augmentation depends on the text input like how words with multiple synonym.
 
     synonym_replacement_prob : float, default=0.1
-        Probability of synonym replacement of a random word. *Slow
+        Probability of synonym replacement of a random word. Slow
 
     synonym_insertion_prob : float, default=0.1
-        Probability of synonym insertion of a random word. *Slow
+        Probability of synonym insertion of a random word. Slow
 
     random_swapping_prob : float, default=0.1
         Probability of randomly swapping placement of the two words.
@@ -337,7 +336,7 @@ class EDAAugmentator(BaseEstimator, TransformerMixin):
         """Does nothing. Exist for compatibility reasons for sklearn pipelines."""
         return self
 
-    def transform(self, X: pd.Series, y: Optional[pd.Series] = None):
+    def transform(self, X: pd.Series, y=None):
         """Augmentate text from given text series.
 
         Parameters

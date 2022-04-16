@@ -63,6 +63,25 @@ class TransformerClassifier(BaseEstimator, ClassifierMixin):
         self.model_path = model_path
         self.encoder = LabelEncoder()
 
+    def prefit(self, X: pd.Series, y=None):
+        """Prefit Transformer model with unlabeled text data.
+
+        Parameters
+        ----------
+        X : pd.Series
+            Pandas series containing texts.
+
+        y : None
+             This parameter is not needed.
+
+        Returns
+        -------
+        self : object
+            Fitted estimator.
+        """
+
+        raise NotImplementedError("Prefit method is not implemented for transformer models.")
+
     def fit(self, X: pd.Series, y: pd.Series, verbose: bool = True):
         f"""Fit/Finetune a {self.model_type} estimator from traning set.
 

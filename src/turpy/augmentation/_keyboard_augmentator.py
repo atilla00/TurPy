@@ -11,7 +11,8 @@ def _duplicator(val, n):
     return [val for _ in range(n)]
 
 class KeyboardAugmentator(TransformerMixin, nac.KeyboardAug):
-    """Text augmentation by simulating keyboard errors.
+    """
+    Text augmentation by simulating keyboard errors.
 
     Parameters
     ----------
@@ -132,6 +133,9 @@ class KeyboardAugmentator(TransformerMixin, nac.KeyboardAug):
 
         y : Optional[pd.Series]
             None or Pandas text series containing targets. If provided augmented target series returned.
+
+        n : int
+            Number of augmentations to apply.
 
         Returns
         -------

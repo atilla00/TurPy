@@ -2,13 +2,14 @@ import re
 import string
 import unicodedata
 import pkg_resources
+import pandas as pd
 from typing import Set, Union, Optional
 from .._types import validate_text_input
 from sklearn.base import BaseEstimator, TransformerMixin
 
 
 class TextPreprocesser(BaseEstimator, TransformerMixin):
-    """Text cleaning preprocessor.
+    """General text preprocessor.
 
     Parameters
     ----------
@@ -45,7 +46,7 @@ class TextPreprocesser(BaseEstimator, TransformerMixin):
     replace_stopwords : Union[bool, str], default=False
         Replace stopwrods with provided string. Setting this to True will remove stopwords.
 
-    stopwords : Otpional[Set[str]], default=None
+    stopwords : Optional[Set[str]], default=None
         Set of stopwords.
     """
 
@@ -79,35 +80,35 @@ class TextPreprocesser(BaseEstimator, TransformerMixin):
         self.replace_stopwords = replace_stopwords
         self.stopwords = stopwords
 
-    def do_lowercase(self, s, to_replace):
+    def _do_lowercase(self, s, to_replace):
         validate_text_input(s)
         return s.str.lower()
 
-    def do_replace_digits(self, s, to_replace):
+    def _do_replace_digits(self, s, to_replace):
         validate_text_input(s)
         return s.str.replace(r"\d+", to_replace, regex=True)
 
-    def do_replace_digits_blocks_only(self, s, to_replace):
+    def _do_replace_digits_blocks_only(self, s, to_replace):
         validate_text_input(s)
         return s.str.replace(r"\b\d+\b", to_replace, regex=True)
 
-    def do_replace_punctuations(self, s, to_replace):
+    def _do_replace_punctuations(self, s, to_replace):
         validate_text_input(s)
         return s.str.replace(rf"([{string.punctuation}])+", to_replace, regex=True)
 
-    def _do_remove_diacritics(self, text):
+    def __do_remove_diacritics(self, text):
         nfkd_form = unicodedata.normalize("NFKD", text)
         return "".join([char for char in nfkd_form if not unicodedata.combining(char)])
 
-    def do_remove_diacritics(self, s, to_replace):
+    def _do_remove_diacritics(self, s, to_replace):
         validate_text_input(s)
-        return s.astype("unicode").apply(self._do_remove_diacritics)
+        return s.astype("unicode").apply(self.__do_remove_diacritics)
 
-    def do_replace_urls(self, s, to_replace):
+    def _do_replace_urls(self, s, to_replace):
         validate_text_input(s)
         return s.str.replace(r"http\S+", to_replace, regex=True)
 
-    def do_replace_html_tags(self, s, to_replace):
+    def _do_replace_html_tags(self, s, to_replace):
         validate_text_input(s)
         pattern = r"""(?x)                              # Turn on free-spacing
         <[ ^ >]+>                                       # Remove <html> tags
@@ -116,17 +117,17 @@ class TextPreprocesser(BaseEstimator, TransformerMixin):
 
         return s.str.replace(pattern, to_replace, regex=True)
 
-    def do_replace_hashtags(self, s, to_replace):
+    def _do_replace_hashtags(self, s, to_replace):
         validate_text_input(s)
         pattern = r"#[a-zA-Z0-9_]+"
         return s.str.replace(pattern, to_replace, regex=True)
 
-    def do_replace_tags(self, s, to_replace):
+    def _do_replace_tags(self, s, to_replace):
         validate_text_input(s)
         pattern = r"@[a-zA-Z0-9_]+"
         return s.str.replace(pattern, to_replace, regex=True)
 
-    def _do_replace_stopwords(self, text, stopwords, to_replace):
+    def __do_replace_stopwords(self, text, stopwords, to_replace):
         pattern = r"""
                     (?x)
                     \w+(?: -\w+) *
@@ -135,7 +136,7 @@ class TextPreprocesser(BaseEstimator, TransformerMixin):
                     """
         return "".join(t if t not in stopwords else to_replace for t in re.findall(pattern, text))
 
-    def do_replace_stopwords(self, s, to_replace):
+    def _do_replace_stopwords(self, s, to_replace):
         validate_text_input(s)
         if self.stopwords is None:
             path = pkg_resources.resource_filename('turpy', 'resources/stopwords.txt')
@@ -143,9 +144,9 @@ class TextPreprocesser(BaseEstimator, TransformerMixin):
             with open(path, 'r', encoding='utf-8') as file:
                 stopwords = set(file.read().split("\n"))
 
-        return s.apply(self._do_replace_stopwords, args=(stopwords, to_replace))
+        return s.apply(self.__do_replace_stopwords, args=(stopwords, to_replace))
 
-    def do_replace_emojis(self, s, to_replace):
+    def _do_replace_emojis(self, s, to_replace):
         validate_text_input(s)
         emoji_pattern = re.compile("["
                                    u"\U0001F600-\U0001F64F"  # emoticons
@@ -156,19 +157,19 @@ class TextPreprocesser(BaseEstimator, TransformerMixin):
 
         return s.str.replace(emoji_pattern, to_replace, regex=True)
 
-    def do_remove_extra_whitespace(self, s, to_replace):
+    def _do_remove_extra_whitespace(self, s, to_replace):
         validate_text_input(s)
         return s.str.replace("\xa0", " ").str.split().str.join(" ")
 
-    def fit(self, X, y=None):
+    def fit(self, X: pd.Series, y=None):
         """Does nothing. Exist for compatibility reasons for sklearn pipelines."""
         return self
 
-    def transform(self, X, y=None):
+    def transform(self, X: pd.Series, y=None):
         """Preprocess text from given text series.
 
         Parameters
-        - ---------
+        ----------
         X: pd.Series
             Pandas text series containing texts.
 
@@ -176,9 +177,11 @@ class TextPreprocesser(BaseEstimator, TransformerMixin):
             Ignored.
 
         Returns
-        - ------
+        ----------
         X: pd.Series
             Preprocessed text series.
+
+
         """
         validate_text_input(X)
         # Automatic
@@ -187,9 +190,9 @@ class TextPreprocesser(BaseEstimator, TransformerMixin):
 
         # Ordered
         class_methods = [
-            "do_lowercase", "do_remove_diacritics", "do_replace_punctuations", "do_replace_emojis",
-            "do_replace_digits", "do_replace_digits_blocks_only", "do_replace_urls", "do_replace_html_tags", "do_replace_hashtags", "do_replace_tags",
-            "do_replace_stopwords", "do_remove_extra_whitespace"
+            "_do_lowercase", "_do_remove_diacritics", "_do_replace_punctuations", "_do_replace_emojis",
+            "_do_replace_digits", "_do_replace_digits_blocks_only", "_do_replace_urls", "_do_replace_html_tags", "_do_replace_hashtags", "do_replace_tags",
+            "_do_replace_stopwords", "_do_remove_extra_whitespace"
         ]
 
         for method_name in class_methods:
