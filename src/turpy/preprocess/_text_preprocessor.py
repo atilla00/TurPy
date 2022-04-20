@@ -31,7 +31,7 @@ class TextPreprocesser(BaseEstimator, TransformerMixin):
     remove_diacritics : Union[bool, str], default=False
         Remove diacritics.
 
-    remove_extra_white_space : Union[bool, str], default=False
+    remove_extra_whitespace : Union[bool, str], default=False
         Remove extra white space.
 
     replace_urls : Union[bool, str], default=False
@@ -94,7 +94,7 @@ class TextPreprocesser(BaseEstimator, TransformerMixin):
 
     def _do_replace_punctuations(self, s, to_replace):
         validate_text_input(s)
-        return s.str.replace(rf"([{string.punctuation}])+", to_replace, regex=True)
+        return s.str.replace(rf"([{string.punctuation}])", to_replace, regex=True)
 
     def __do_remove_diacritics(self, text):
         nfkd_form = unicodedata.normalize("NFKD", text)
@@ -111,8 +111,8 @@ class TextPreprocesser(BaseEstimator, TransformerMixin):
     def _do_replace_html_tags(self, s, to_replace):
         validate_text_input(s)
         pattern = r"""(?x)                              # Turn on free-spacing
-        <[ ^ >]+>                                       # Remove <html> tags
-        | & ([a-z0-9]+|\  # [0-9]{1,6}|\#x[0-9a-f]{1,6}); # Remove &nbsp;
+        <[^>]+>                                       # Remove <html> tags
+        | &([a-z0-9]+|\#[0-9]{1,6}|\#x[0-9a-f]{1,6}); # Remove &nbsp;
         """
 
         return s.str.replace(pattern, to_replace, regex=True)
@@ -128,12 +128,11 @@ class TextPreprocesser(BaseEstimator, TransformerMixin):
         return s.str.replace(pattern, to_replace, regex=True)
 
     def __do_replace_stopwords(self, text, stopwords, to_replace):
-        pattern = r"""
-                    (?x)
-                    \w+(?: -\w+) *
-                    | \s *
-                    | [][!"  # $%&'*+,-./:;<=>?@\\^():_`{|}~]
-                    """
+        pattern = r"""(?x)                          # Set flag to allow verbose regexps
+        \w+(?:-\w+)*                              # Words with optional internal hyphens 
+        | \s*                                     # Any space
+        | [][!"#$%&'*+,-./:;<=>?@\\^():_`{|}~]    # Any symbol 
+        """
         return "".join(t if t not in stopwords else to_replace for t in re.findall(pattern, text))
 
     def _do_replace_stopwords(self, s, to_replace):
@@ -142,9 +141,9 @@ class TextPreprocesser(BaseEstimator, TransformerMixin):
             path = pkg_resources.resource_filename('turpy', 'resources/stopwords.txt')
 
             with open(path, 'r', encoding='utf-8') as file:
-                stopwords = set(file.read().split("\n"))
+                self.stopwords = set(file.read().split("\n"))
 
-        return s.apply(self.__do_replace_stopwords, args=(stopwords, to_replace))
+        return s.apply(self.__do_replace_stopwords, args=(self.stopwords, to_replace))
 
     def _do_replace_emojis(self, s, to_replace):
         validate_text_input(s)
