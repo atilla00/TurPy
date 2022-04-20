@@ -129,9 +129,9 @@ class TextPreprocesser(BaseEstimator, TransformerMixin):
 
     def __do_replace_stopwords(self, text, stopwords, to_replace):
         pattern = r"""(?x)                          # Set flag to allow verbose regexps
-        \w+(?:-\w+)*                              # Words with optional internal hyphens 
+        \w+(?:-\w+)*                              # Words with optional internal hyphens
         | \s*                                     # Any space
-        | [][!"#$%&'*+,-./:;<=>?@\\^():_`{|}~]    # Any symbol 
+        | [][!"#$%&'*+,-./:;<=>?@\\^():_`{|}~]    # Any symbol
         """
         return "".join(t if t not in stopwords else to_replace for t in re.findall(pattern, text))
 

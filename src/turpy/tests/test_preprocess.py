@@ -1,6 +1,5 @@
 from turpy.preprocess import TextPreprocesser
 import pandas as pd
-import pkg_resources
 
 def test_lowercase():
     test_input = pd.Series(["AAAAA", "aAaA"])
