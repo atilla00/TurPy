@@ -119,11 +119,11 @@ class KeyboardAugmentator(TransformerMixin, nac.KeyboardAug):
         cls_str = ",\n".join(cls_str_list)
         return f"""{self.name}(\n{cls_str}\n)"""
 
-    def fit(self, X: pd.Series, y=None):
+    def fit(self, X: pd.Series, y=None, **extra_params):
         """Does nothing. Exist for compatibility reasons for sklearn pipelines."""
         return self
 
-    def transform(self, X: pd.Series, y=None, n=5):
+    def transform(self, X: pd.Series, y=None, n=1, **extra_params):
         """Augmentate text from given text series.
 
         Parameters
@@ -161,3 +161,25 @@ class KeyboardAugmentator(TransformerMixin, nac.KeyboardAug):
             .reset_index(drop=True)
 
         return X_auged, y_auged
+
+    def fit_transform(self, X, y=None, **extra_params):
+        """
+        Fit to data, then transform it.
+
+        Parameters
+        ----------
+        X : pd.Series
+            Pandas text series containing texts.
+
+        y : Optional[pd.Series]
+            None or Pandas text series containing targets. If provided augmented target series returned.
+
+        Returns
+        -------
+        X_auged : pd.Series
+            Augmented text series.
+
+        y_auged : pd.Series or None
+            Augmented target series.
+        """
+        return self.fit(X, y, **extra_params).transform(X, y, **extra_params)

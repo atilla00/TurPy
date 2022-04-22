@@ -24,6 +24,8 @@ class TransformerClassifier(BaseEstimator, ClassifierMixin):
         Specific GPU that should be used.
     n_gpu : int, default=1
         Number of GPUs to use.
+    silent : bool, default=False
+        Show progress bar.
     batch_size : int, default=8
         Training batch_size.
     no_epochs : int, default=1
@@ -43,6 +45,7 @@ class TransformerClassifier(BaseEstimator, ClassifierMixin):
                  use_gpu: bool = True,
                  gpu_id: int = 0,
                  n_gpu: int = 1,
+                 silent: bool = False,
                  batch_size: int = 8,
                  no_epochs: int = 1,
                  learning_rate: float = 4e-5,
@@ -54,6 +57,7 @@ class TransformerClassifier(BaseEstimator, ClassifierMixin):
         self.use_gpu = use_gpu
         self.gpu_id = gpu_id
         self.n_gpu = n_gpu
+        self.silent = silent
         self.batch_size = batch_size
         self.no_epochs = no_epochs
         self.max_seq_length = max_seq_length
@@ -119,6 +123,8 @@ class TransformerClassifier(BaseEstimator, ClassifierMixin):
         self.args = {
             "output_dir": self.output_dir,
             "overwrite_output_dir": True,
+
+            "silent": self.silent,
 
             "max_seq_length": self.max_seq_length,
             "num_train_epochs": self.no_epochs,

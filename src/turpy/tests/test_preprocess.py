@@ -1,4 +1,4 @@
-from turpy.preprocess import TextPreprocesser
+from turpy.preprocess import TextPreprocesser, SpellingPreprocessor
 import pandas as pd
 
 def test_lowercase():
@@ -149,3 +149,15 @@ def test_replace_stopwords():
     expected = pd.Series(["ya napıyon", "bu tavırlara karşıyım x sen yaparsan olur"])
     processor = TextPreprocesser(replace_stopwords="x", stopwords=stopwords)
     assert expected.equals(processor.fit_transform(test_input))
+
+
+def test_spellchecker():
+    test_input = pd.Series(["ne oluyr ısteme", "herhaldeyapmazonlar"])
+
+    expected = pd.Series(["ne olur isteme", "herhalde amazonlar"])  # Totally wrong
+    speller = SpellingPreprocessor(speller="sentence", max_edit_distance=1)
+    assert expected.equals(speller.fit_transform(test_input))
+
+    expected = pd.Series(["ne oluyr ısteme", "herhalde yapmaz onlar"])
+    speller = SpellingPreprocessor(speller="noisy_sentence", max_edit_distance=1)
+    assert expected.equals(speller.fit_transform(test_input))

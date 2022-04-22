@@ -13,7 +13,7 @@ class SpellingPreprocessor(BaseEstimator, TransformerMixin):
     Parameters
     ----------
     speller : str, default='sentence'
-        Which algorithms to use for correction. Possible algorithms: ['sentence', 'noisy sentence'].
+        Which algorithms to use for correction. Possible algorithms: ['sentence', 'noisy_sentence'].
 
     max_edit_distance : int, default=1
         The maximum edit distance between input andsuggested words.

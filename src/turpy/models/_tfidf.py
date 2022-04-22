@@ -102,7 +102,7 @@ class TfIdfClassifier(BaseEstimator, ClassifierMixin):
         return self
 
     def fit(self, X: pd.Series, y: pd.Series):
-        """Build TF-IDF vectors from training set and fit the provided estimator.
+        """Build TF-IDF vectors from training set and fit the provided estimator. If prefit, it uses prefitted vectorizer to embed input text.
 
         Parameters
         ----------
