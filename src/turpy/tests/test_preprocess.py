@@ -1,6 +1,18 @@
 from turpy.preprocess import TextPreprocesser, SpellingPreprocessor
 import pandas as pd
 
+def test_preprocess_order():
+    test_input = pd.Series(["İİİ", "III"])
+
+    processor = TextPreprocesser(lowercase=True, remove_diacritics=True, order=["lowercase", "remove_diacritics"])
+    expected = pd.Series(["iii", "iii"])
+    assert expected.equals(processor.fit_transform(test_input))
+
+    processor = TextPreprocesser(lowercase=True, remove_diacritics=True, order=["remove_diacritics", "lowercase"])
+    expected = pd.Series(["ııı", "ııı"])
+    assert expected.equals(processor.fit_transform(test_input))
+
+
 def test_lowercase():
     test_input = pd.Series(["AAAAA", "aAaA"])
     expected = pd.Series(["aaaaa", "aaaa"])
