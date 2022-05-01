@@ -37,7 +37,7 @@ def __check_types(s: pd.Series) -> Tuple[bool, str]:
 
     return True, ""
 
-
+# Texthero Decorator
 def TextSeries(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):

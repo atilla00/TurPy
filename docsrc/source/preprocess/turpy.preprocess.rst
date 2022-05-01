@@ -6,3 +6,4 @@ Preprocess
 
    spelling
    text
+   functions
