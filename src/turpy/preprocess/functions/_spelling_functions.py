@@ -1,12 +1,12 @@
 from symspellpy import SymSpell
 import pkg_resources
 
+__all__ = ["correct_sentence", "correct_noisy_sentence", "correct_word"]
+
+
 sym_spell = SymSpell()
 path = pkg_resources.resource_filename('turpy', 'resources/word_count.txt')
 sym_spell.load_dictionary(path, 0, 1, encoding="utf-8")
-
-
-__all__ = ["correct_sentence", "correct_noisy_sentence", "correct_word"]
 
 
 def correct_sentence(text: str, max_edit_distance=1, ignore_non_words=False,
