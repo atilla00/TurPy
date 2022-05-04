@@ -27,8 +27,15 @@ logger = logging.getLogger(__name__)
 
 
 class TurpyClassificationModel(ClassificationModel):
-    def __init__(self, model_type, model_name, tokenizer_type=None, tokenizer_name=None, num_labels=None, weight=None, args=None, use_cuda=True, cuda_device=-1, onnx_execution_provider=None, **kwargs):
-        super().__init__(model_type, model_name, tokenizer_type, tokenizer_name, num_labels, weight, args, use_cuda, cuda_device, onnx_execution_provider, **kwargs)
+    def __init__(
+        self,
+        model_type, model_name, tokenizer_type=None, tokenizer_name=None, num_labels=None, weight=None, args=None,
+        use_cuda=True, cuda_device=-1, onnx_execution_provider=None, **kwargs
+    ):
+        super().__init__(
+            model_type, model_name, tokenizer_type, tokenizer_name, num_labels,
+            weight, args, use_cuda, cuda_device, onnx_execution_provider, **kwargs
+        )
 
     def save_model(self, output_dir=None, optimizer=None, scheduler=None, model=None, results=None):
         if self.args.no_save:
@@ -61,9 +68,7 @@ class TurpyClassificationModel(ClassificationModel):
         args = self.args
 
         t_total = (
-            len(train_dataloader)
-            // args.gradient_accumulation_steps
-            * args.num_train_epochs
+            len(train_dataloader) // args.gradient_accumulation_steps * args.num_train_epochs
         )
 
         no_decay = ["bias", "LayerNorm.weight"]
@@ -107,8 +112,7 @@ class TurpyClassificationModel(ClassificationModel):
                         "params": [
                             p
                             for n, p in model.named_parameters()
-                            if n not in custom_parameter_names
-                            and not any(nd in n for nd in no_decay)
+                            if n not in custom_parameter_names and not any(nd in n for nd in no_decay)
                         ],
                         "weight_decay": args.weight_decay,
                     },
@@ -116,8 +120,7 @@ class TurpyClassificationModel(ClassificationModel):
                         "params": [
                             p
                             for n, p in model.named_parameters()
-                            if n not in custom_parameter_names
-                            and any(nd in n for nd in no_decay)
+                            if n not in custom_parameter_names and any(nd in n for nd in no_decay)
                         ],
                         "weight_decay": 0.0,
                     },
@@ -204,7 +207,7 @@ class TurpyClassificationModel(ClassificationModel):
 
         global_step = 0
         training_progress_scores = None
-        tr_loss, logging_loss = 0.0, 0.0
+        tr_loss = 0.0
         model.zero_grad()
         train_iterator = trange(
             int(args.num_train_epochs), desc="Epoch", disable=args.silent, mininterval=0
@@ -341,8 +344,7 @@ class TurpyClassificationModel(ClassificationModel):
                         )
 
                     if args.evaluate_during_training and (
-                        args.evaluate_during_training_steps > 0
-                        and global_step % args.evaluate_during_training_steps == 0
+                        args.evaluate_during_training_steps > 0 and global_step % args.evaluate_during_training_steps == 0
                     ):
                         # Only evaluate when single GPU otherwise metrics may not average well
                         results, _, _ = self.eval_model(
@@ -366,8 +368,6 @@ class TurpyClassificationModel(ClassificationModel):
                                 results=results,
                             )
 
-                        #training_progress_scores = cast(training_progress_scores, Dict[List[int]])
-
                         training_progress_scores["global_step"].append(global_step)
                         training_progress_scores["train_loss"].append(current_loss)
                         for key in results:
@@ -376,8 +376,7 @@ class TurpyClassificationModel(ClassificationModel):
                         if test_df is not None:
                             test_results, _, _ = self.eval_model(
                                 test_df,
-                                verbose=verbose
-                                and args.evaluate_during_training_verbose,
+                                verbose=verbose and args.evaluate_during_training_verbose,
                                 silent=args.evaluate_during_training_silent,
                                 wandb_log=False,
                                 **kwargs,
@@ -406,8 +405,7 @@ class TurpyClassificationModel(ClassificationModel):
                             )
                         if best_eval_metric and args.early_stopping_metric_minimize:
                             if (
-                                best_eval_metric - results[args.early_stopping_metric]
-                                > args.early_stopping_delta
+                                best_eval_metric - results[args.early_stopping_metric] > args.early_stopping_delta
                             ):
                                 best_eval_metric = results[args.early_stopping_metric]
                                 self.save_model(
@@ -421,8 +419,7 @@ class TurpyClassificationModel(ClassificationModel):
                             else:
                                 if args.use_early_stopping:
                                     if (
-                                        early_stopping_counter
-                                        < args.early_stopping_patience
+                                        early_stopping_counter < args.early_stopping_patience
                                     ):
                                         early_stopping_counter += 1
                                         if verbose:
@@ -450,8 +447,7 @@ class TurpyClassificationModel(ClassificationModel):
                                         )
                         else:
                             if (
-                                results[args.early_stopping_metric] - best_eval_metric
-                                > args.early_stopping_delta
+                                results[args.early_stopping_metric] - best_eval_metric > args.early_stopping_delta
                             ):
                                 best_eval_metric = results[args.early_stopping_metric]
                                 self.save_model(
@@ -465,8 +461,7 @@ class TurpyClassificationModel(ClassificationModel):
                             else:
                                 if args.use_early_stopping:
                                     if (
-                                        early_stopping_counter
-                                        < args.early_stopping_patience
+                                        early_stopping_counter < args.early_stopping_patience
                                     ):
                                         early_stopping_counter += 1
                                         if verbose:
@@ -552,8 +547,7 @@ class TurpyClassificationModel(ClassificationModel):
                     )
                 if best_eval_metric and args.early_stopping_metric_minimize:
                     if (
-                        best_eval_metric - results[args.early_stopping_metric]
-                        > args.early_stopping_delta
+                        best_eval_metric - results[args.early_stopping_metric] > args.early_stopping_delta
                     ):
                         best_eval_metric = results[args.early_stopping_metric]
                         self.save_model(
@@ -566,8 +560,7 @@ class TurpyClassificationModel(ClassificationModel):
                         early_stopping_counter = 0
                     else:
                         if (
-                            args.use_early_stopping
-                            and args.early_stopping_consider_epochs
+                            args.use_early_stopping and args.early_stopping_consider_epochs
                         ):
                             if early_stopping_counter < args.early_stopping_patience:
                                 early_stopping_counter += 1
@@ -596,8 +589,7 @@ class TurpyClassificationModel(ClassificationModel):
                                 )
                 else:
                     if (
-                        results[args.early_stopping_metric] - best_eval_metric
-                        > args.early_stopping_delta
+                        results[args.early_stopping_metric] - best_eval_metric > args.early_stopping_delta
                     ):
                         best_eval_metric = results[args.early_stopping_metric]
                         self.save_model(
@@ -610,8 +602,7 @@ class TurpyClassificationModel(ClassificationModel):
                         early_stopping_counter = 0
                     else:
                         if (
-                            args.use_early_stopping
-                            and args.early_stopping_consider_epochs
+                            args.use_early_stopping and args.early_stopping_consider_epochs
                         ):
                             if early_stopping_counter < args.early_stopping_patience:
                                 early_stopping_counter += 1
