@@ -67,12 +67,18 @@ class TfIdfClassifier(BaseEstimator, ClassifierMixin):
                  sublinear_tf: bool = False,
                  lowercase: bool = False
                  ):
-
-        self.is_prefit = False
         self.estimator = estimator
+        self.ngram_range = ngram_range
+        self.max_df = max_df
+        self.min_df = min_df
+        self.use_idf = use_idf
+        self.smooth_idf = smooth_idf
+        self.sublinear_tf = sublinear_tf
+        self.lowercase = lowercase
+        self.is_prefit = False
         self.vectorizer = TfidfVectorizer(
-            ngram_range=ngram_range, max_df=max_df, min_df=min_df, lowercase=lowercase,
-            use_idf=use_idf, smooth_idf=smooth_idf, sublinear_tf=sublinear_tf
+            ngram_range=self.ngram_range, max_df=self.max_df, min_df=self.min_df, lowercase=self.lowercase,
+            use_idf=self.use_idf, smooth_idf=self.smooth_idf, sublinear_tf=self.sublinear_tf
         )
 
     def prefit(

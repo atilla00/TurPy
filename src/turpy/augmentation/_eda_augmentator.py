@@ -24,7 +24,7 @@ def _duplicator(val, n):
 
 def _duplicator_pandas(row):
     """duplicate {row[0]} as {row[1]} times"""
-    return _duplicator(row[0], row[1])
+    return _duplicator(row.iloc[0], row.iloc[1])
 
 
 wordnet = WordNet()

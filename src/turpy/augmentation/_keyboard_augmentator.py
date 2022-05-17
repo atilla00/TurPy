@@ -131,10 +131,10 @@ class KeyboardAugmentator(TransformerMixin, nac.KeyboardAug):
         X : pd.Series
             Pandas text series containing texts.
 
-        y : Optional[pd.Series]
+        y : Optional[pd.Series], default=None
             None or Pandas text series containing targets. If provided augmented target series returned.
 
-        n : int
+        n : int, default=1
             Number of augmentations to apply.
 
         Returns

@@ -129,6 +129,7 @@ class TextPreprocesser(BaseEstimator, TransformerMixin):
                     to_replace = ""
                     X = func(X, to_replace, self.stopwords)
                 else:
+                    to_replace = attribute
                     X = func(X, to_replace, self.stopwords)
 
         else:

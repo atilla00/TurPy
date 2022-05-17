@@ -17,5 +17,5 @@ If you want to use transformer based models using CPU::
 
 If you want to use transformer based models using GPU, it is preferred that you use conda to install cuda dependencies::
 
-    conda install pytorch>=1.6 cudatoolkit=11.0 -c pytorch
+    conda install pytorch cudatoolkit=11.3 -c pytorch
     pip install turpy-nlpkit[deep]
