@@ -55,7 +55,7 @@ class KeyboardAugmentator(TransformerMixin, nac.KeyboardAug):
     include_upper_case : bool, default=False
         If True, upper case character may be included in augmented data.
 
-    lang : str, default='str'
+    lang : str, default='tr'
         Indicate built-in language model.
 
     verbose : int, default=0

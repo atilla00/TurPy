@@ -53,7 +53,7 @@ class TfIdfClassifier(BaseEstimator, ClassifierMixin):
     sublinear_tf : bool, default=False
         Apply sublinear tf scaling, i.e. replace tf with 1 + log(tf).
 
-    lowercase : bool, default=False
+    lowercase : bool, default=True
         Convert all characters to lowercase before tokenizing.
     """
 
@@ -65,7 +65,7 @@ class TfIdfClassifier(BaseEstimator, ClassifierMixin):
                  use_idf: bool = True,
                  smooth_idf: bool = True,
                  sublinear_tf: bool = False,
-                 lowercase: bool = False
+                 lowercase: bool = True
                  ):
         self.estimator = estimator
         self.ngram_range = ngram_range
