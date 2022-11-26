@@ -6,6 +6,9 @@ import pandas as pd
 
 from turpy.preprocess._base import BaseTextTransformer
 
+__all__ = ["LowerCaseTransformer", "ExtraWhiteSpaceTransformer", "DiacriticTransformer",
+     "DigitTransformer", "PunctuationTransformer", "UrlTransformer", "HtmlTagTransformer", 
+     "HashtagTransformer", "EmojiTransformer", "TagTransformer"]
 
 class LowerCaseTransformer(BaseTextTransformer):
     def transform(self, X: pd.Series, y: pd.Series = None):
@@ -32,9 +35,9 @@ class DigitTransformer(BaseTextTransformer):
         self.blocks_only = blocks_only
 
         if self.blocks_only:
-            self.pattern = r"\b\d+\b"
+            self.pattern = r"\b[-+]?(?:\d*\.\d+|\d+)\b"
         else:
-            self.pattern = r"\d+"
+            self.pattern = r"[-+]?(?:\d*\.\d+|\d+)" #r"\d+"
 
 
 class PunctuationTransformer(BaseTextTransformer):
